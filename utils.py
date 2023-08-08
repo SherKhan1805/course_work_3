@@ -1,12 +1,14 @@
 import json
 import requests
 import datetime
+from operator import itemgetter
+from classes import Operations
 
 
 def unpacking_json():
 
     """
-    Функция сортирует json-файл.
+    Cортируем json-файл.
     Возвращает только успешные операции.
     """
 
@@ -20,23 +22,47 @@ def unpacking_json():
         else:
             continue
 
+    """
+    Получаем дату операции. Именяем ее формат.
+    Меняем значение в словаре по ключу.
+    """
+
+    executed_list_2 = []
+
     for executed_operation in executed_list:
 
         date = datetime.datetime.strptime(executed_operation.get("date"), '%Y-%m-%dT%H:%M:%S.%f')
         new_date = f'{date:%Y%m%d%H%M%S%f}'
-        executed_operation["date"] = new_date
-        print(new_date)
-        print(executed_operation)
+        executed_operation["date"] = int(new_date)
+        executed_list_2.append(executed_operation)
+        # print(new_date)
+        # print(executed_operation)
 
-    # print(len(executed_operation))
+    # print(executed_list_2)
 
-    return list_json
+    executed_list_3 = sorted(executed_list_2, key=itemgetter("date"))
+    # print(executed_list_3)
+    last_5_operation = executed_list_3[-5:]
+    print(last_5_operation)
 
-print(unpacking_json())
+    last_5_operation = executed_list_3[-5:]
+    for oper in last_5_operation:
+        date = oper["date"]
+        amount = oper["operationAmount"]["amount"]
+        currency = oper["operationAmount"]["currency"]["name"]
+        description = oper["description"]
+        # from_ = oper["from"]                      """assert"""
+        to_ = oper["to"]
+
+        operations = Operations(date, amount, currency, description, to_)
+
+        print(operations)
+
+    # return list_json
+
+unpacking_json()
 
 
-# date = datetime.datetime.strptime('2019-08-26T10:50:58.294041', '%Y-%m-%dT%H:%M:%S.%f')
-# print(f'{date:%d.%m.%Y}')
-# 26.08.2019
+
 
 
