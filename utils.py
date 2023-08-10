@@ -12,6 +12,7 @@ def unpacking_json():
     Возвращает только успешные операции.
     """
 
+    global date, amount, currency, description, to_, from_
     executed_list = []
 
     file = open("operations.json", encoding='utf-8')
@@ -41,26 +42,29 @@ def unpacking_json():
     # print(executed_list_2)
 
     executed_list_3 = sorted(executed_list_2, key=itemgetter("date"))
-    # print(executed_list_3)
     last_5_operation = executed_list_3[-5:]
-    print(last_5_operation)
 
-    last_5_operation = executed_list_3[-5:]
+    total_list = []
+
     for oper in last_5_operation:
-        date = oper["date"]
-        amount = oper["operationAmount"]["amount"]
-        currency = oper["operationAmount"]["currency"]["name"]
-        description = oper["description"]
-        # from_ = oper["from"]                      """assert"""
-        to_ = oper["to"]
+        try:
+            date = oper["date"]
+            amount = oper["operationAmount"]["amount"]
+            currency = oper["operationAmount"]["currency"]["name"]
+            description = oper["description"]
+            to_ = oper["to"]
+            from_ = oper["from"]
 
-        operations = Operations(date, amount, currency, description, to_)
+        except KeyError:
+            from_ = None
+            # print(from_)
 
-        print(operations)
+        operations_s = Operations(date, amount, currency, description, to_, from_)
+        total_list.append(operations_s)
+        # print(operations)
 
-    # return list_json
+    return total_list
 
-unpacking_json()
 
 
 
