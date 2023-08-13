@@ -4,22 +4,18 @@ import datetime
 from operator import itemgetter
 from classes import Operations
 
-
 def unpacking_json():
-
     """
-    Cортируем json-файл.
-    Возвращает только успешные операции.
+    Функция распаковывает json.
+    Сортирует элементы списка по успешности операции
+    и добавляет их в список"
     """
-
-    global date, amount, currency, description, to_, from_
-    executed_list = []
-
     file = open("operations.json", encoding='utf-8')
     list_json = json.load(file)
-    for operations in list_json:
-        if operations.get("state") == "EXECUTED":
-           executed_list.append(operations)
+    executed_list = []
+    for operation in list_json:
+        if operation.get("state") == "EXECUTED":
+            executed_list.append(operation)
         else:
             continue
 
@@ -31,15 +27,10 @@ def unpacking_json():
     executed_list_2 = []
 
     for executed_operation in executed_list:
-
         date = datetime.datetime.strptime(executed_operation.get("date"), '%Y-%m-%dT%H:%M:%S.%f')
         new_date = f'{date:%Y%m%d%H%M%S%f}'
         executed_operation["date"] = int(new_date)
         executed_list_2.append(executed_operation)
-        # print(new_date)
-        # print(executed_operation)
-
-    # print(executed_list_2)
 
     executed_list_3 = sorted(executed_list_2, key=itemgetter("date"))
     last_5_operation = executed_list_3[-5:]
@@ -56,14 +47,66 @@ def unpacking_json():
             from_ = oper["from"]
 
         except KeyError:
-            from_ = None
-            # print(from_)
+            from_ = False
 
         operations_s = Operations(date, amount, currency, description, to_, from_)
         total_list.append(operations_s)
-        # print(operations)
 
     return total_list
+
+def get_from_check_or_card(operation):
+    """
+    Получет объект from.
+    Определяет счет это или карта.
+    Шифрует в зависимости от типа.
+    """
+    _from = operation.get_from_()
+    if operation.get_from_():
+        for i in _from.split():
+            if i == 'Счет':
+                check_from = _from.split()[0] + ' **' + _from.split()[1][-4:]
+                return check_from
+            else:
+                if i == 'Visa':
+                    card_from = f"{i} {_from.split()[1]} {_from[-4:]} {_from[-6:-4]}** **** {_from[-16:-12]}"
+                    return card_from
+                else:
+                    card_from = f"{i} {_from[-4:]} {_from[-6:-4]}** **** {_from[-16:-12]}"
+                    return card_from
+    else:
+        return False
+
+def get_to_check_or_card(operation):
+    """
+    Получет объект to.
+    Определяет счет это или карта.
+    Шифрует в зависимости от типа.
+    """
+    _to = operation.get_to_()
+    for i in _to.split():
+        if i == 'Счет':
+            check_from = _to.split()[0] + ' **' + _to.split()[1][-4:]
+            return check_from
+        else:
+            if i == 'Visa':
+                card_from = f"{i} {_to.split()[1]} {_to[-4:]} {_to[-6:-4]}** **** {_to[-16:-12]}"
+                return card_from
+            else:
+                card_from = f"{i} {_to[-4:]} {_to[-6:-4]}** **** {_to[-16:-12]}"
+                return card_from
+
+def get_from_and_to(operation):
+    """
+    Вызывает функции с объектами.
+    Определяет как вывод информацию пользователю.
+    """
+    from_ = get_from_check_or_card(operation)
+    to_ = get_to_check_or_card(operation)
+    if from_:
+        return f'{from_} -> {to_}'
+    else:
+        return to_
+
 
 
 
