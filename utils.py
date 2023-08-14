@@ -1,10 +1,10 @@
 import json
-import requests
 import datetime
 from operator import itemgetter
-from classes import Operations
+from classes import Operation
 
-def unpacking_json():
+
+def unpacking_json(file_name="operations.json"):
     """
     Функция распаковывает json.
     Сортирует элементы списка по успешности операции
@@ -49,10 +49,11 @@ def unpacking_json():
         except KeyError:
             from_ = False
 
-        operations_s = Operations(date, amount, currency, description, to_, from_)
+        operations_s = Operation(date, amount, currency, description, to_, from_)
         total_list.append(operations_s)
 
     return total_list
+
 
 def get_from_check_or_card(operation):
     """
@@ -60,6 +61,7 @@ def get_from_check_or_card(operation):
     Определяет счет это или карта.
     Шифрует в зависимости от типа.
     """
+
     _from = operation.get_from_()
     if operation.get_from_():
         for i in _from.split():
@@ -68,13 +70,14 @@ def get_from_check_or_card(operation):
                 return check_from
             else:
                 if i == 'Visa':
-                    card_from = f"{i} {_from.split()[1]} {_from[-4:]} {_from[-6:-4]}** **** {_from[-16:-12]}"
+                    card_from = f"{i} {_from.split()[1]} {_from[-16:-12]} {_from[-12:-10]}** **** {_from[-4:]}"
                     return card_from
                 else:
-                    card_from = f"{i} {_from[-4:]} {_from[-6:-4]}** **** {_from[-16:-12]}"
+                    card_from = f"{i} {_from[-16:-12]} {_from[-12:-10]}** **** {_from[-4:]}"
                     return card_from
     else:
         return False
+
 
 def get_to_check_or_card(operation):
     """
@@ -82,6 +85,7 @@ def get_to_check_or_card(operation):
     Определяет счет это или карта.
     Шифрует в зависимости от типа.
     """
+
     _to = operation.get_to_()
     for i in _to.split():
         if i == 'Счет':
@@ -89,11 +93,12 @@ def get_to_check_or_card(operation):
             return check_from
         else:
             if i == 'Visa':
-                card_from = f"{i} {_to.split()[1]} {_to[-4:]} {_to[-6:-4]}** **** {_to[-16:-12]}"
+                card_from = f"{i} {_to.split()[1]} {_to[-16:-12]} {_to[-12:-10]}** **** {_to[-4:]}"
                 return card_from
             else:
-                card_from = f"{i} {_to[-4:]} {_to[-6:-4]}** **** {_to[-16:-12]}"
+                card_from = f"{i} {_to[-16:-12]} {_to[-12:-10]}** **** {_to[-4:]}"
                 return card_from
+
 
 def get_from_and_to(operation):
     """
@@ -108,8 +113,13 @@ def get_from_and_to(operation):
         return to_
 
 
+def formate_date(operation):
+    """
+    Получает дату.
+    Конвертирует ее в нормальный вид.
+    """
 
-
-
-
-
+    str_data = str(operation.get_date())
+    str_data = str_data[:8]
+    date = datetime.datetime.strptime(str_data, '%Y%m%d')
+    return date.strftime('%d.%m.%Y')
